@@ -1,9 +1,11 @@
 import https from 'https';
-import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
+import { rooms } from './router/room-router';
+import { reservations } from './router/reservation-router';
  
+const express = require('express')
 const app = express();
 const port = 3000;
 
@@ -14,11 +16,11 @@ const options =  {
 
 app.use(helmet());
 
-app.get('', (req, res) => {
-	res.json({
-		"message": "Hello, HTTPS! 👋"
-	});
-});
+
+app.use(express.json())
+
+app.use('/rooms', rooms)
+app.use('/reservations', reservations)
  
 https.createServer(options, app).listen(port, () => {
 	console.log(`Running 'secure-http' on ${port}`);
