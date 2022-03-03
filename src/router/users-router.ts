@@ -9,6 +9,6 @@ router.get('/:uid', Users.getOne);
 
 router.post('/', json(), Users.create);
 
-router.post('/login', Users.login);
+router.post('/login', json(), Users.login);
 
 export const users = router;
