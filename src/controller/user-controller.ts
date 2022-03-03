@@ -1,14 +1,17 @@
-import { Request, Response } from "express";
+// Code is inspired by example/lesson-03/authentication from course repo
+
+import { json, Request, Response } from "express";
 import { sign } from 'jsonwebtoken';
 import { readFile } from 'fs';
 import mongoose from "mongoose";
 import { userSchema } from "../model/user";
 import { join }  from 'path';
 import { randomBytes, pbkdf2, SALT_LENGTH, DIGEST, ITERATIONS, KEY_LENGTH, ROUNDS } from '../utils/auth-crypto'
+import { ObjectId } from "mongodb";
 
 
-const PATH_PRIVATE_KEY = join(__dirname, '..', '..', 'private-rsa256.key')
-const PATH_PUBLIC_KEY = join(__dirname, '..', '..', 'public', 'rsa256.key.pub')
+const PATH_PRIVATE_KEY = join(__dirname, '..', '..', 'private-hsa256.key')
+const PATH_PUBLIC_KEY = join(__dirname, '..', '..', 'public', 'hsa256.key.pub')
 
 const X5U = 'http://localhost:3000/rsa256.key.pub'
 
@@ -19,11 +22,26 @@ const orderConnection = mongoose.createConnection(
 const userModel = orderConnection.model("User", userSchema);
 
 const get = async (req: Request, res: Response) => {
- 
+  let users = await userModel.find().exec()
+  res.json(users)
 };
 
 const getOne = async (req: Request, res: Response) => {
-
+  const { uid } = req.params
+  if (ObjectId.isValid(uid)) {
+    let user = await userModel.findOne({ _id: uid }).exec()
+    if (user) {
+      res.json(user)
+    } else {
+      res.status(404).json({
+        "message": "User not found" 
+    })
+  }
+  } else {
+    res.status(400).json({
+      "message": "Invalid uid"
+    })
+  }
 };
 
 const create = async (req: Request, res: Response) => {
@@ -51,10 +69,11 @@ const login = async (req: Request, res: Response) => {
         if(err) {
           res.sendStatus(500)
         } else {
-          sign({ email }, privateKey, { expiresIn: '1h', header: { alg: 'RS256', x5u: X5U} }, (err, token) => {
+          sign({ email, role: user.role }, privateKey, { expiresIn: '1h', header: { alg: 'HS256', x5u: X5U } }, (err, token) => {
             if(err) {
-              res.status(400).json({
-                message: err.message
+              res.status(500).json({
+                message: err.message,
+                type: err.name
               })
             } else {
               res.json({ token })
