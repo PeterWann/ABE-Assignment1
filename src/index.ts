@@ -10,13 +10,10 @@ import { UserRoles } from './model/user';
 import { rooms } from './router/room-router';
 import { reservations } from './router/reservation-router';
  
-const express = require('express')
 const app = express();
 const port = 3000;
 
 app.use(express.static('public'));
-
-app.use('/users', users);
 
 const options = {
 	key: fs.readFileSync(path.join(__dirname, '..', 'key.pem')),
@@ -25,12 +22,13 @@ const options = {
 
 app.use(helmet());
 
+app.use('/users', users);
+
 app.get('', (req, res) => {
 	res.json({
 	  'message': 'API is live!'
 	})
   })
-
 
 app.use((req, res, next) => {
 	const token = req.get('authorization')?.split(' ')[1]
@@ -46,20 +44,12 @@ app.use((req, res, next) => {
 	}
   })
 
-// Room and Reservation router here - they need authorization first!
+app.use('/rooms', rooms);
+app.use('/reservations', reservations);
 
 app.use(express.json())
 
  
 https.createServer(options, app).listen(port, () => {
 	console.log(`Running 'secure-http' on ${port}`);
-app.use('/rooms', rooms)
-app.use('/reservations', reservations)
- 
-// https.createServer(options, app).listen(port, () => {
-// 	console.log(`Running 'secure-http' on ${port}`);
-// });
-
-app.listen(port, () => {
-	console.log(`Running 'authentication' on ${port}`)
-  })
+});
