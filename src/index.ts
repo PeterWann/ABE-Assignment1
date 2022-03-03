@@ -1,14 +1,19 @@
-import https from 'https';
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import helmet from 'helmet';
+import { users } from './router/users-router';
  
 const app = express();
 const port = 3000;
 
-app.use(helmet());
+app.use(express.static('public'));
+
+app.use('/users', users);
+
+app.get('', (req, res) => {
+	res.json({
+	  'message': 'API is live!'
+	})
+  })
  
-https.createServer(app).listen(port, () => {
-	console.log(`Running 'secure-http' on ${port}`);
-});
+app.listen(port, () => {
+	console.log(`Running 'authentication' on ${port}`)
+})
