@@ -8,6 +8,7 @@ const orderConnection = mongoose.createConnection(
 const reservationModel = orderConnection.model("Reservation", reservationSchema);
 
 const get = async (req: Request, res: Response) => {
+  
   const { f, t } = req.query;
 
   let filter = {};
@@ -48,7 +49,7 @@ const update = async (req: Request, res: Response) => {
   const { uid } = req.params;
   console.log(uid);
   let result = await reservationModel
-    .updateOne({ _id: uid }, { $set: { amount: 100 } })
+    .updateOne({ _id: uid })
     .exec();
   res.json({ uid, result });
 };

@@ -41,7 +41,7 @@ const update = async (req: Request, res: Response) => {
   const { uid } = req.params;
   console.log(uid);
   let result = await roomModel
-    .updateOne({ _id: uid }, { $set: { amount: 100 } })
+    .updateOne({ _id: uid })
     .exec();
   res.json({ uid, result });
 };

@@ -22,6 +22,10 @@ app.use(express.json())
 app.use('/rooms', rooms)
 app.use('/reservations', reservations)
  
-https.createServer(options, app).listen(port, () => {
-	console.log(`Running 'secure-http' on ${port}`);
-});
+// https.createServer(options, app).listen(port, () => {
+// 	console.log(`Running 'secure-http' on ${port}`);
+// });
+
+app.listen(port, () => {
+	console.log(`Running 'authentication' on ${port}`)
+  })
