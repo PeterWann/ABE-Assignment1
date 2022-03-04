@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 import { reservationSchema } from "../model/reservation";
 import { Room, roomSchema } from "../model/room";
+import { reservations } from "../router/reservation-router";
 import { VerifyRoles } from "../helper/verify-role";
 import { userSchema } from "../model/user";
 import { users } from "../router/users-router";
@@ -29,13 +30,13 @@ const get = async (req: Request, res: Response) => {
   let filter = {};
 
   if (f && t) {
-    filter = { ...filter, timestamp: { $gt: f, $lt: t } };
+    filter = { ...filter, from: { $gt: f, $lt: t } };
   } else {
     if (f) {
-      filter = { ...filter, timestamp: { $gt: f } };
+      filter = { ...filter, from: { $gt: f } };
     }
     if (t) {
-      filter = { ...filter, timestamp: { $lt: t } };
+      filter = { ...filter, from: { $lt: t } };
     }
   }
 
@@ -56,19 +57,40 @@ const getOne = async (req: Request, res: Response) => {
 };
 
 const create = async (req: Request, res: Response) => {
+
+  const from: Date = new Date(req.body.from);
+  const to: Date = new Date(req.body.to);
+
+
+
   const token = req.get('authorization')?.split(' ')[1]
   const jwt = decode(token as string, { json: true })
   
+
   if (req.body.room) {
     const bodyreq: Room = req.body.room;
     let roomId: string = bodyreq._id;
     if (ObjectId.isValid(roomId)) {
+
+      let result: any = await roomModel.findOne({ _id: roomId }, { __v: 0 }).exec();
+      if (result) {
+        for (let index = 0; index < result.reservations.length; index++) {
+          let reservation: any = await reservationModel.findById(result.reservations[index]);
+          console.log(reservation.from, from);
+          if(reservation.from <= from && reservation.to >= to) {
+            return res.status(400).json({
+              message: "Not available"
+            });
+        }}
+
       let result = await roomModel.find({ _id: roomId }, { __v: 0 }).exec();
       if (result.length !== 0) {
         req.body.createdBy = await userModel.findById(jwt?.id)
         console.log(req.body.user);
+
         let { id } = await new reservationModel(req.body).save();
         res.json({ id });
+        await roomModel.updateOne({_id:roomId}, {$push: {reservations: await reservationModel.findById(id)}});
       } else {
         res.status(404).json({
           message: "room not found",
