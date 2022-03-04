@@ -41,9 +41,9 @@ app.use((req, res, next) => {
 	if (verifyRole === true) {
 		next()
 	} else if (verifyRole === "Invalid Token") {
-		res.sendStatus(400)
+		return res.sendStatus(400)
 	} else {
-		res.sendStatus(401)
+		return res.sendStatus(401)
 	}
   })
 

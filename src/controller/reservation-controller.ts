@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { decode } from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
-import { reservationSchema } from "../model/reservation";
+import { VerifyRoles } from "../helper/verify-role";
+import { Reservation, reservationSchema } from "../model/reservation";
 import { Room, roomSchema } from "../model/room";
 import { userSchema } from "../model/user";
 import { users } from "../router/users-router";
@@ -38,38 +39,70 @@ const get = async (req: Request, res: Response) => {
 };
 
 const getOne = async (req: Request, res: Response) => {
+  let userRoleId;
+
+  if (VerifyRoles(false, false, true, req)) {
+    const token = req.get("authorization")?.split(" ")[1];
+    const jwt = decode(token as string, { json: true });
+    userRoleId = jwt?.id;
+    console.log(token, jwt, userRoleId);
+  }
+
   const { uid } = req.params;
   if (ObjectId.isValid(uid)) {
-    let result = await reservationModel.find({ _id: uid }, { __v: 0 }).exec();
-    res.json(result);
+    if (userRoleId) {
+      let reservation: any = await reservationModel.findById(uid);
+      if (reservation) {
+        reservation.createdBy;
+        let user: any = await userModel.findById(userRoleId);
+        if (user._id.toString() === reservation.createdBy.toString()) {
+          res.json(reservation);
+        } else {
+          return res.status(403).json({
+            message: "Unauthorized",
+          });
+        }
+      } else {
+        let result = await reservationModel
+          .find({ _id: uid }, { __v: 0 })
+          .exec();
+          if(result.length === 0)
+          {
+            return res.status(403).json({
+              message: "Unauthorized",
+            });
+          }
+        res.json(result);
+      }
+    }
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Wrong ID length in param",
     });
   }
 };
 
 const create = async (req: Request, res: Response) => {
-  const token = req.get('authorization')?.split(' ')[1]
-  const jwt = decode(token as string, { json: true })
-  
+  const token = req.get("authorization")?.split(" ")[1];
+  const jwt = decode(token as string, { json: true });
+
   if (req.body.room) {
     const bodyreq: Room = req.body.room;
     let roomId: string = bodyreq._id;
     if (ObjectId.isValid(roomId)) {
       let result = await roomModel.find({ _id: roomId }, { __v: 0 }).exec();
       if (result.length !== 0) {
-        req.body.createdBy = await userModel.findById(jwt?.id)
+        req.body.createdBy = await userModel.findById(jwt?.id);
         console.log(req.body.user);
         let { id } = await new reservationModel(req.body).save();
         res.json({ id });
       } else {
-        res.status(404).json({
+        return res.status(404).json({
           message: "room not found",
         });
       }
     } else {
-      res.status(400).json({
+      return res.status(400).json({
         message: "Wrong ID length in body",
       });
     }
@@ -85,7 +118,7 @@ const remove = async (req: Request, res: Response) => {
     let result = await reservationModel.deleteOne({ _id: uid });
     res.json(result);
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Wrong ID length in param",
     });
   }
@@ -110,7 +143,7 @@ const update = async (req: Request, res: Response) => {
           res.json({ uid, result });
         }
       } else {
-        res.status(400).json({
+        return res.status(400).json({
           message: "Wrong ID length in body",
         });
       }
@@ -121,7 +154,7 @@ const update = async (req: Request, res: Response) => {
       res.json({ uid, result });
     }
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Wrong ID length in param",
     });
   }

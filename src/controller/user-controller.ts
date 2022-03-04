@@ -32,12 +32,12 @@ const getOne = async (req: Request, res: Response) => {
     if (user) {
       res.json(user)
     } else {
-      res.status(404).json({
+      return res.status(404).json({
         "message": "User not found" 
     })
   }
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       "message": "Invalid uid"
     })
   }
@@ -46,7 +46,7 @@ const getOne = async (req: Request, res: Response) => {
 const create = async (req: Request, res: Response) => {
     const { name, email, password, role } = req.body
     if(await userExists(email)) {
-      res.status(400).json({
+      return res.status(400).json({
         "message": "User already exists"
       });
     } else {
@@ -66,11 +66,11 @@ const login = async (req: Request, res: Response) => {
     if(await user.password.isPasswordValid(password)) {
       readFile(PATH_PRIVATE_KEY, (err, privateKey) => {
         if(err) {
-          res.sendStatus(500)
+          return res.sendStatus(500)
         } else {
           sign({ email, role: user.role, id: user._id }, privateKey, { expiresIn: '1h', header: { alg: 'HS256', x5u: X5U } }, (err, token) => {
             if(err) {
-              res.status(500).json({
+              return res.status(500).json({
                 message: err.message,
                 type: err.name
               })
@@ -81,10 +81,10 @@ const login = async (req: Request, res: Response) => {
         }
       })
     } else {
-      res.sendStatus(403)
+      return res.sendStatus(403)
     }
   } else {
-    res.sendStatus(400)
+    return res.sendStatus(400)
   }
 };
 

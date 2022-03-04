@@ -33,7 +33,7 @@ const getOne = async (req: Request, res: Response) => {
     let result = await roomModel.find({ _id: uid }, { __v: 0 }).exec();
     res.json(result);
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Wrong ID length in param",
     });
   }
@@ -55,12 +55,12 @@ const create = async (req: Request, res: Response) => {
           let { id } = await new roomModel(req.body).save();
           res.json({ id });
         } else {
-          res.status(404).json({
+          return res.status(404).json({
             message: "reservation not found",
           });
         }
       } else {
-        res.status(400).json({
+        return res.status(400).json({
           message: "Wrong ID length in body",
         });
       }
@@ -77,7 +77,7 @@ const remove = async (req: Request, res: Response) => {
     let result = await roomModel.deleteOne({ _id: uid });
     res.json(result);
   } else {
-    res.status(404).json({
+    return res.status(404).json({
       message: "reservation not found",
     });
   }
@@ -103,12 +103,12 @@ const update = async (req: Request, res: Response) => {
               .exec();
             res.json({ uid, result });
           } else {
-            res.status(404).json({
+            return res.status(404).json({
               message: "reservation not found",
             });
           }
         } else {
-          res.status(400).json({
+          return res.status(400).json({
             message: "Wrong ID length in body",
           });
         }
@@ -118,7 +118,7 @@ const update = async (req: Request, res: Response) => {
       res.json({ uid, result });
     }
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Wrong ID length in param",
     });
   }
