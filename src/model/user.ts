@@ -11,7 +11,8 @@ export interface User {
 export enum UserRoles {
     Manager,
     Clerk,
-    Guest
+    Guest,
+    Invalid
 }
 
 export interface Password {

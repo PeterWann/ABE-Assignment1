@@ -3,8 +3,6 @@ import { Users } from "../controller/user-controller";
 
 const router = Router();
 
-router.get('/', Users.get);
+router.post('/', json(), Users.create);
 
-router.get('/:uid', Users.getOne);
-
-export const users = router;
+export const user = router;
