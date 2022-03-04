@@ -5,10 +5,13 @@ import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
 import { users } from './router/users-router';
+import { user } from './router/user-router';
+import { login } from './router/login-router';
 import { decode } from 'jsonwebtoken';
 import { UserRoles } from './model/user';
 import { rooms } from './router/room-router';
 import { reservations } from './router/reservation-router';
+import { VerifyRoles } from './helper/verify-role';
  
 const app = express();
 const port = 3000;
@@ -23,6 +26,8 @@ const options = {
 app.use(helmet());
 
 app.use('/users', users);
+app.use('/user', user);
+app.use('/login', login);
 
 app.get('', (req, res) => {
 	res.json({
@@ -31,16 +36,13 @@ app.get('', (req, res) => {
   })
 
 app.use((req, res, next) => {
-	const token = req.get('authorization')?.split(' ')[1]
-	if(token) {
-	  const jwt = decode(token, { json: true })
-	  if(jwt?.role === UserRoles.Clerk || UserRoles.Guest || UserRoles.Manager) {
+	let verifyRole = VerifyRoles(true, true, true, req)
+	if (verifyRole === true) {
 		next()
-	  } else {
-		res.sendStatus(401)
-	  }
+	} else if (verifyRole === "Invalid Token") {
+		res.sendStatus(400)
 	} else {
-	  res.sendStatus(400)
+		res.sendStatus(401)
 	}
   })
 
