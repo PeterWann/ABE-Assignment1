@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 import { reservationSchema } from "../model/reservation";
 import { Room, roomSchema } from "../model/room";
+import { VerifyRoles } from "../helper/verify-role";
 import { userSchema } from "../model/user";
 import { users } from "../router/users-router";
 
@@ -18,6 +19,11 @@ const roomModel = orderConnection.model("Room", roomSchema);
 const userModel = orderConnection.model("User", userSchema);
 
 const get = async (req: Request, res: Response) => {
+  if (VerifyRoles(true, true, false, req) === false) {
+    res.status(403).json({
+      message: "Unauthorized access. Manager and clerk only"
+    })
+  }
   const { f, t } = req.query;
 
   let filter = {};
@@ -80,6 +86,11 @@ const create = async (req: Request, res: Response) => {
 };
 
 const remove = async (req: Request, res: Response) => {
+  if (VerifyRoles(true, true, false, req) === false) {
+    res.status(403).json({
+      message: "Unauthorized access. Manager and clerk only"
+    })
+  }
   const { uid } = req.params;
   if (ObjectId.isValid(uid)) {
     let result = await reservationModel.deleteOne({ _id: uid });
