@@ -68,7 +68,7 @@ const login = async (req: Request, res: Response) => {
         if(err) {
           res.sendStatus(500)
         } else {
-          sign({ email, role: user.role }, privateKey, { expiresIn: '1h', header: { alg: 'HS256', x5u: X5U } }, (err, token) => {
+          sign({ email, role: user.role, id: user._id }, privateKey, { expiresIn: '1h', header: { alg: 'HS256', x5u: X5U } }, (err, token) => {
             if(err) {
               res.status(500).json({
                 message: err.message,
