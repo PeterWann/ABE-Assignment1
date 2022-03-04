@@ -3,7 +3,6 @@ import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 import { Reservation, reservationSchema } from "../model/reservation";
 import { roomSchema } from "../model/room";
-import { Reservations } from "./reservation-controller";
 import { VerifyRoles } from "../helper/verify-role";
 
 const orderConnection = mongoose.createConnection(
@@ -43,7 +42,7 @@ const getOne = async (req: Request, res: Response) => {
 const create = async (req: Request, res: Response) => {
 
   if (VerifyRoles(true, false, false, req) === false) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Unauthorized access. Manager only"
     })
   }
@@ -80,7 +79,7 @@ const create = async (req: Request, res: Response) => {
 
 const remove = async (req: Request, res: Response) => {
   if (VerifyRoles(true, false, false, req) === false) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Unauthorized access. Manager only"
     })
   }
@@ -97,7 +96,7 @@ const remove = async (req: Request, res: Response) => {
 
 const update = async (req: Request, res: Response) => {
   if (VerifyRoles(true, true, false, req) === false) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Unauthorized access. Manager and clerk only"
     })
   }

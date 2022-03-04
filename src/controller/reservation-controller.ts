@@ -6,7 +6,6 @@ import { VerifyRoles } from "../helper/verify-role";
 import { Reservation, reservationSchema } from "../model/reservation";
 import { Room, roomSchema } from "../model/room";
 import { reservations } from "../router/reservation-router";
-import { VerifyRoles } from "../helper/verify-role";
 import { userSchema } from "../model/user";
 import { users } from "../router/users-router";
 
@@ -22,7 +21,7 @@ const userModel = orderConnection.model("User", userSchema);
 
 const get = async (req: Request, res: Response) => {
   if (VerifyRoles(true, true, false, req) === false) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Unauthorized access. Manager and clerk only"
     })
   }
@@ -115,9 +114,8 @@ const create = async (req: Request, res: Response) => {
               message: "Not available"
             });
         }}
-
-      let result = await roomModel.find({ _id: roomId }, { __v: 0 }).exec();
-      if (result.length !== 0) {
+      }
+      if (result) {
         req.body.createdBy = await userModel.findById(jwt?.id);
         console.log(req.body.user);
 
@@ -142,7 +140,7 @@ const create = async (req: Request, res: Response) => {
 
 const remove = async (req: Request, res: Response) => {
   if (VerifyRoles(true, true, false, req) === false) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Unauthorized access. Manager and clerk only"
     })
   }
