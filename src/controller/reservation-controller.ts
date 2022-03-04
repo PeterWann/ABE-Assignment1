@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 import { reservationSchema } from "../model/reservation";
 import { Room, roomSchema } from "../model/room";
+import { reservations } from "../router/reservation-router";
 
 const orderConnection = mongoose.createConnection(
   "mongodb://localhost:27017/hotels"
@@ -19,13 +20,13 @@ const get = async (req: Request, res: Response) => {
   let filter = {};
 
   if (f && t) {
-    filter = { ...filter, timestamp: { $gt: f, $lt: t } };
+    filter = { ...filter, from: { $gt: f, $lt: t } };
   } else {
     if (f) {
-      filter = { ...filter, timestamp: { $gt: f } };
+      filter = { ...filter, from: { $gt: f } };
     }
     if (t) {
-      filter = { ...filter, timestamp: { $lt: t } };
+      filter = { ...filter, from: { $lt: t } };
     }
   }
 
@@ -46,14 +47,29 @@ const getOne = async (req: Request, res: Response) => {
 };
 
 const create = async (req: Request, res: Response) => {
+
+  const from: Date = new Date(req.body.from);
+  const to: Date = new Date(req.body.to);
+
+
+
   if (req.body.room) {
     const bodyreq: Room = req.body.room;
     let roomId: string = bodyreq._id;
     if (ObjectId.isValid(roomId)) {
-      let result = await roomModel.find({ _id: roomId }, { __v: 0 }).exec();
-      if (result.length !== 0) {
+      let result: any = await roomModel.findOne({ _id: roomId }, { __v: 0 }).exec();
+      if (result) {
+        for (let index = 0; index < result.reservations.length; index++) {
+          let reservation: any = await reservationModel.findById(result.reservations[index]);
+          console.log(reservation.from, from);
+          if(reservation.from <= from && reservation.to >= to) {
+            return res.status(400).json({
+              message: "Not available"
+            });
+        }}
         let { id } = await new reservationModel(req.body).save();
         res.json({ id });
+        await roomModel.updateOne({_id:roomId}, {$push: {reservations: await reservationModel.findById(id)}});
       } else {
         res.status(404).json({
           message: "room not found",

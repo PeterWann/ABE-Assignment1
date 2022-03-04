@@ -3,11 +3,13 @@ import { Room, roomSchema } from "./room";
 
 export interface Reservation {
   _id: string;
-  timestamp: Date;
+  from: Date;
+  to: Date;
   room: Room;
 }
 
 export const reservationSchema: Schema = new Schema<Reservation>({
-  timestamp: { type: Date, required: true },
+  from: { type: Date, required: true },
+  to: { type: Date, required: true },
   room: { type: Schema.Types.ObjectId, ref: "Room", required: false }, // // Hvis Room skal tilføjes, skal det tilføjes via id i json
 });

@@ -6,7 +6,7 @@ router.use(json());
 
 router.get("/", Rooms.get);
 
-router.post("/", Rooms.create);
+router.post("/", json(), Rooms.create);
 
 router.get("/:uid", Rooms.getOne);
 
