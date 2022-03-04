@@ -1,7 +1,8 @@
-import { Router } from "express";
+import { json, Router } from "express";
 import { Rooms } from "../controller/room-controller";
 
 const router = Router();
+router.use(json());
 
 router.get("/", Rooms.get);
 

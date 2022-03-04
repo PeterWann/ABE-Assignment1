@@ -23,6 +23,9 @@ const options = {
 app.use(helmet());
 
 app.use('/users', users);
+app.use('/rooms', rooms);
+app.use('/reservations', reservations);
+
 
 app.get('', (req, res) => {
 	res.json({
@@ -44,8 +47,6 @@ app.use((req, res, next) => {
 	}
   })
 
-app.use('/rooms', rooms);
-app.use('/reservations', reservations);
 
 app.use(express.json())
 

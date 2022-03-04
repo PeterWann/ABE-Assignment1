@@ -1,7 +1,8 @@
-import { Router } from "express";
+import { json, Router } from "express";
 import { Reservations } from "../controller/reservation-controller";
 
 const router = Router();
+router.use(json());
 
 router.get("/", Reservations.get);
 
