@@ -1,17 +1,16 @@
 // Code is inspired by example/lesson-03/authentication from course repo
 
-import { json, Request, Response } from "express";
+import { Request, Response } from "express";
 import { sign } from 'jsonwebtoken';
 import { readFile } from 'fs';
 import mongoose from "mongoose";
 import { userSchema } from "../model/user";
 import { join }  from 'path';
-import { randomBytes, pbkdf2, SALT_LENGTH, DIGEST, ITERATIONS, KEY_LENGTH, ROUNDS } from '../utils/auth-crypto'
+import { randomBytes, pbkdf2, SALT_LENGTH, DIGEST, ITERATIONS, KEY_LENGTH } from '../utils/auth-crypto'
 import { ObjectId } from "mongodb";
 
 
 const PATH_PRIVATE_KEY = join(__dirname, '..', '..', 'private-hsa256.key')
-const PATH_PUBLIC_KEY = join(__dirname, '..', '..', 'public', 'hsa256.key.pub')
 
 const X5U = 'http://localhost:3000/rsa256.key.pub'
 
@@ -22,7 +21,7 @@ const orderConnection = mongoose.createConnection(
 const userModel = orderConnection.model("User", userSchema);
 
 const get = async (req: Request, res: Response) => {
-  let users = await userModel.find().exec()
+  let users = await userModel.find({}, {name: 0, email: 0, role: 0, __v: 0, password: 0}).exec()
   res.json(users)
 };
 
