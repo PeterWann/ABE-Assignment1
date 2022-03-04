@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { Reservation, reservationSchema } from "../model/reservation";
 import { roomSchema } from "../model/room";
 import { Reservations } from "./reservation-controller";
+import { VerifyRoles } from "../helper/verify-role";
 
 const orderConnection = mongoose.createConnection(
   "mongodb://localhost:27017/hotels"
@@ -40,6 +41,12 @@ const getOne = async (req: Request, res: Response) => {
 };
 
 const create = async (req: Request, res: Response) => {
+
+  if (VerifyRoles(true, false, false, req) === false) {
+    res.status(403).json({
+      message: "Unauthorized access. Manager only"
+    })
+  }
   if (req.body.reservations) {
     const bodyreq: Reservation[] = req.body.reservations;
     let reservationIdsArray: string[] = [];
@@ -72,6 +79,11 @@ const create = async (req: Request, res: Response) => {
 };
 
 const remove = async (req: Request, res: Response) => {
+  if (VerifyRoles(true, false, false, req) === false) {
+    res.status(403).json({
+      message: "Unauthorized access. Manager only"
+    })
+  }
   const { uid } = req.params;
   if (ObjectId.isValid(uid)) {
     let result = await roomModel.deleteOne({ _id: uid });
@@ -84,6 +96,11 @@ const remove = async (req: Request, res: Response) => {
 };
 
 const update = async (req: Request, res: Response) => {
+  if (VerifyRoles(true, true, false, req) === false) {
+    res.status(403).json({
+      message: "Unauthorized access. Manager and clerk only"
+    })
+  }
   const { uid } = req.params;
   if (ObjectId.isValid(uid)) {
     if (req.body.reservations) {
